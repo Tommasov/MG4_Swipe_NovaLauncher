@@ -55,7 +55,7 @@ public class SwipeService extends Service {
 
             WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                     WindowManager.LayoutParams.MATCH_PARENT,
-                    10,
+                    100,
                     layoutFlags,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     PixelFormat.TRANSLUCENT);
@@ -97,29 +97,13 @@ public class SwipeService extends Service {
     }
 
     private void openNovaLauncher() {
-        if (isAppRunning("com.teslacoilsw.launcher")) {
-            Intent intent = new Intent();
-            intent.setClassName("com.teslacoilsw.launcher", "com.teslacoilsw.launcher.Launcher");
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+        Intent intent = getPackageManager().getLaunchIntentForPackage("com.teslacoilsw.launcher");
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
         } else {
-            Intent intent = getPackageManager().getLaunchIntentForPackage("com.teslacoilsw.launcher");
-            if (intent != null) {
-                startActivity(intent);
-            } else {
-                Toast.makeText(this, "Nova Launcher not found", Toast.LENGTH_SHORT).show();
-            }
+            Toast.makeText(this, "Nova Launcher not found", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private boolean isAppRunning(String packageName) {
-        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningAppProcessInfo appProcess : activityManager.getRunningAppProcesses()) {
-            if (appProcess.processName.equals(packageName)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
