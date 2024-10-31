@@ -1,10 +1,12 @@
 package com.tommasov.mg4swipenovalauncher;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.net.Uri;
@@ -94,14 +96,30 @@ public class SwipeService extends Service {
         }
     }
 
-
     private void openNovaLauncher() {
-        Intent intent = getPackageManager().getLaunchIntentForPackage("com.teslacoilsw.launcher");
-        if (intent != null) {
+        if (isAppRunning("com.teslacoilsw.launcher")) {
+            Intent intent = new Intent();
+            intent.setClassName("com.teslacoilsw.launcher", "com.teslacoilsw.launcher.Launcher");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
             startActivity(intent);
         } else {
-            Toast.makeText(this, "Nova Launcher not found", Toast.LENGTH_SHORT).show();
+            Intent intent = getPackageManager().getLaunchIntentForPackage("com.teslacoilsw.launcher");
+            if (intent != null) {
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Nova Launcher not found", Toast.LENGTH_SHORT).show();
+            }
         }
+    }
+
+    private boolean isAppRunning(String packageName) {
+        ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningAppProcessInfo appProcess : activityManager.getRunningAppProcesses()) {
+            if (appProcess.processName.equals(packageName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
