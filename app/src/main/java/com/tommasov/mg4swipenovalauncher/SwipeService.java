@@ -1,13 +1,13 @@
 package com.tommasov.mg4swipenovalauncher;
 
 import android.annotation.SuppressLint;
-import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
@@ -97,12 +97,20 @@ public class SwipeService extends Service {
     }
 
     private void openNovaLauncher() {
-        Intent intent = getPackageManager().getLaunchIntentForPackage("com.teslacoilsw.launcher");
+
+        SharedPreferences sharedPreferences = getSharedPreferences("SwipeServicePrefs", Context.MODE_PRIVATE);
+        String packageName = sharedPreferences.getString("packageName", null);
+
+        if (packageName == null) {
+            packageName = "com.teslacoilsw.launcher";
+        }
+
+        Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
         if (intent != null) {
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
         } else {
-            Toast.makeText(this, "Nova Launcher not found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Package not found", Toast.LENGTH_SHORT).show();
         }
     }
 

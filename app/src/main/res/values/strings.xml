@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MG 4 Swipe Nova Launcher</string>
+    <string name="explanation_text">Select an app to launch with swipe.</string>
 </resources>
