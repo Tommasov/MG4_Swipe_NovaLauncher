@@ -55,7 +55,7 @@ public class SwipeService extends Service {
 
             WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                     WindowManager.LayoutParams.MATCH_PARENT,
-                    100,
+                    10, //100 for the EMULATOR, 10 for MG4
                     layoutFlags,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     PixelFormat.TRANSLUCENT);
@@ -99,7 +99,7 @@ public class SwipeService extends Service {
     private void openNovaLauncher() {
         Intent intent = getPackageManager().getLaunchIntentForPackage("com.teslacoilsw.launcher");
         if (intent != null) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
         } else {
             Toast.makeText(this, "Nova Launcher not found", Toast.LENGTH_SHORT).show();
