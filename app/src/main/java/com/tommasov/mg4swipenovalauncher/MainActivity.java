@@ -1,15 +1,11 @@
 package com.tommasov.mg4swipenovalauncher;
 
-import android.accessibilityservice.AccessibilityService;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,17 +22,18 @@ import java.util.List;
 import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String PREFS_NAME = "SwipeServicePrefs";
-    private static final String KEY_PACKAGE_NAME = "packageName";
     private PackageManager packageManager;
     private AppListAdapter adapter;
     private List<ApplicationInfo> allApps;
+    private PreferencesManager preferencesManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+        preferencesManager = new PreferencesManager(this);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -63,12 +60,12 @@ public class MainActivity extends AppCompatActivity {
             return label1.compareToIgnoreCase(label2);
         });
 
-        String selectedPackage = getSelectedPackage();
+        String selectedPackage = preferencesManager.getSelectedPackage();
         if (selectedPackage == null) {
             for (ApplicationInfo appInfo : userApps) {
                 if (appInfo.packageName.equals("com.teslacoilsw.launcher")) {
                     selectedPackage = appInfo.packageName;
-                    saveSelectedPackage(selectedPackage);
+                    preferencesManager.saveSelectedPackage(selectedPackage);
                     break;
                 }
             }
@@ -80,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
             ApplicationInfo selectedApp = userApps.get(position);
-            saveSelectedPackage(selectedApp.packageName);
+            preferencesManager.saveSelectedPackage(selectedApp.packageName);
             adapter.setSelectedPackage(selectedApp.packageName);
             adapter.notifyDataSetChanged();
             Toast.makeText(MainActivity.this, "Selected: " + selectedApp.packageName, Toast.LENGTH_SHORT).show();
@@ -89,23 +86,31 @@ public class MainActivity extends AppCompatActivity {
         Button toggleSystemAppsButton = findViewById(R.id.toggle_system_apps_button);
         toggleSystemAppsButton.setOnClickListener(v -> {
             adapter.toggleSystemAppsVisibility();
-            toggleSystemAppsButton.setText(adapter.isSystemAppsVisible() ? "Hide System Apps" : "Show System Apps");
+            toggleSystemAppsButton.setText(adapter.isSystemAppsVisible() ? getString(R.string.hide_system_apps) : getString(R.string.show_system_apps));
+        });
+
+        Switch switchBackButton = findViewById(R.id.switch_back_button);
+
+        switchBackButton.setChecked(!preferencesManager.getBackButtonVisibility().equals("VISIBLE"));
+
+        switchBackButton.setOnClickListener(view -> {
+            if (preferencesManager.getBackButtonVisibility().equals("VISIBLE")) {
+                preferencesManager.saveBackButtonVisibility("INVISIBLE");
+                switchBackButton.setChecked(true);
+            } else {
+                preferencesManager.saveBackButtonVisibility("VISIBLE");
+                switchBackButton.setChecked(false);
+            }
+            stopSwipeService();
+            startSwipeService();
         });
 
         startSwipeService();
     }
 
-
-    private void saveSelectedPackage(String packageName) {
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(KEY_PACKAGE_NAME, packageName);
-        editor.apply();
-    }
-
-    private String getSelectedPackage() {
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return sharedPreferences.getString(KEY_PACKAGE_NAME, null);
+    private void stopSwipeService() {
+        Intent intent = new Intent(this, SwipeService.class);
+        stopService(intent);
     }
 
     private void startSwipeService() {
@@ -117,40 +122,4 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
     }
-
-    private void checkOverlayPermission() {
-        if (!Settings.canDrawOverlays(this)) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:" + getPackageName()));
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-        }
-    }
-
-
-    private boolean isAccessibilityServiceEnabled(Context context, Class<? extends AccessibilityService> service) {
-        String serviceId = context.getPackageName() + "/" + service.getName();
-        String enabledServices = Settings.Secure.getString(
-                context.getContentResolver(),
-                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        );
-        if (enabledServices != null) {
-            for (String enabledService : enabledServices.split(":")) {
-                if (enabledService.equalsIgnoreCase(serviceId)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private void checkAccessibilityPermission() {
-        if (!isAccessibilityServiceEnabled(this, AccService.class)) {
-            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            Toast.makeText(this, "Enable Accessibility Service for full functionality", Toast.LENGTH_LONG).show();
-        }
-    }
-
 }

@@ -22,7 +22,9 @@ import android.widget.Toast;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 
+
 public class SwipeService extends Service {
+    private PreferencesManager preferencesManager;
     private static final String CHANNEL_ID = "SwipeServiceChannel";
     private WindowManager windowManager;
     private View swipeArea;
@@ -116,6 +118,14 @@ public class SwipeService extends Service {
     }
 
     private void backButton(){
+        preferencesManager = new PreferencesManager(this);
+
+        String backButtonVisibility = preferencesManager.getBackButtonVisibility();
+
+        if (backButtonVisibility.equals("INVISIBLE")) {
+            return;
+        }
+
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         floatingButton = LayoutInflater.from(this).inflate(R.layout.layout_floating_button, null);
 
