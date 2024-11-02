@@ -1,7 +1,6 @@
 package com.tommasov.mg4swipenovalauncher;
 
 import android.accessibilityservice.AccessibilityService;
-import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.accessibility.AccessibilityManager;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -132,6 +130,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    private boolean isAccessibilityServiceEnabled(Context context, Class<? extends AccessibilityService> service) {
+        String serviceId = context.getPackageName() + "/" + service.getName();
+        String enabledServices = Settings.Secure.getString(
+                context.getContentResolver(),
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        );
+        if (enabledServices != null) {
+            for (String enabledService : enabledServices.split(":")) {
+                if (enabledService.equalsIgnoreCase(serviceId)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private void checkAccessibilityPermission() {
         if (!isAccessibilityServiceEnabled(this, AccService.class)) {
             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
@@ -141,17 +156,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private boolean isAccessibilityServiceEnabled(Context context, Class<? extends AccessibilityService> service) {
-        String serviceId = context.getPackageName() + "/" + service.getName();
-        AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
-        if (am != null) {
-            List<AccessibilityServiceInfo> enabledServices = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK);
-            for (AccessibilityServiceInfo enabledService : enabledServices) {
-                if (serviceId.equals(enabledService.getId())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }

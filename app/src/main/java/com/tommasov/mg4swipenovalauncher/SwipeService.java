@@ -187,7 +187,6 @@ public class SwipeService extends Service {
         floatingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("MyService", "FloatingActionButton cliccato");
                 Intent intent = new Intent("com.tommasov.mg4swipenovalauncher.ACTION_BACK");
                 sendBroadcast(intent);
             }
