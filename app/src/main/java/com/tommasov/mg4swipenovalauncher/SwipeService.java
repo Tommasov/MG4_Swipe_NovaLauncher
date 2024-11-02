@@ -1,5 +1,7 @@
 package com.tommasov.mg4swipenovalauncher;
 
+import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -13,27 +15,32 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.Toast;
 
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 
+import java.util.List;
+
 public class SwipeService extends Service {
     private static final String CHANNEL_ID = "SwipeServiceChannel";
     private WindowManager windowManager;
+    private WindowManager windowManager2;
     private View swipeArea;
+    private View floatingButton;
     private GestureDetector gestureDetector;
 
     @SuppressLint("ForegroundServiceType")
     @Override
     public void onCreate() {
         super.onCreate();
-
-        checkOverlayPermission();
 
         if (Settings.canDrawOverlays(this)) {
             createNotificationChannel();
@@ -43,35 +50,9 @@ public class SwipeService extends Service {
                     .build();
             startForeground(1, notification);
 
-            windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-            swipeArea = new View(this);
+            swipe();
+            backButton();
 
-            int layoutFlags;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                layoutFlags = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-            } else {
-                layoutFlags = WindowManager.LayoutParams.TYPE_PHONE;
-            }
-
-            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    10, //100 for the EMULATOR, 10 for MG4
-                    layoutFlags,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                    PixelFormat.TRANSLUCENT);
-
-            params.gravity = Gravity.BOTTOM;
-
-            windowManager.addView(swipeArea, params);
-
-            gestureDetector = new GestureDetector(this, new SwipeGestureListener());
-
-            swipeArea.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    return gestureDetector.onTouchEvent(event);
-                }
-            });
         } else {
             stopSelf();
         }
@@ -88,7 +69,7 @@ public class SwipeService extends Service {
             float diffY = endY - startY;
 
             if (diffY < 0 && Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
-                openNovaLauncher();
+                openLauncher();
                 return true;
             }
 
@@ -96,7 +77,7 @@ public class SwipeService extends Service {
         }
     }
 
-    private void openNovaLauncher() {
+    private void openLauncher() {
 
         SharedPreferences sharedPreferences = getSharedPreferences("SwipeServicePrefs", Context.MODE_PRIVATE);
         String packageName = sharedPreferences.getString("packageName", null);
@@ -114,14 +95,122 @@ public class SwipeService extends Service {
         }
     }
 
+    private void swipe(){
+        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        swipeArea = new View(this);
+
+        int layoutFlags;
+        layoutFlags = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                10, //100 for the EMULATOR, 10 for MG4
+                layoutFlags,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT);
+
+        params.gravity = Gravity.BOTTOM;
+
+        windowManager.addView(swipeArea, params);
+
+        gestureDetector = new GestureDetector(this, new SwipeGestureListener());
+
+        swipeArea.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
+            }
+        });
+    }
+
+    private void backButton(){
+        windowManager2 = (WindowManager) getSystemService(WINDOW_SERVICE);
+        floatingButton = LayoutInflater.from(this).inflate(R.layout.layout_floating_button, null);
+
+        int layoutFlags;
+        layoutFlags = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+
+        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                layoutFlags,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT);
+
+        params.gravity = Gravity.TOP | Gravity.LEFT;
+        params.x = 20;
+        params.y = 20;
+
+        windowManager2.addView(floatingButton, params);
+
+        floatingButton.setOnTouchListener(new View.OnTouchListener() {
+            private int initialX;
+            private int initialY;
+            private float initialTouchY;
+            private static final int CLICK_ACTION_THRESHOLD = 10;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        floatingButton.setPressed(true);
+                        initialX = params.x;
+                        initialY = params.y;
+                        initialTouchY = event.getRawY();
+                        return true;
+
+                    case MotionEvent.ACTION_MOVE:
+                        int deltaY = (int) (event.getRawY() - initialTouchY);
+
+                        if (Math.abs(deltaY) > CLICK_ACTION_THRESHOLD) {
+                            params.y = initialY + deltaY;
+                            windowManager.updateViewLayout(floatingButton, params);
+                        }
+                        return true;
+
+                    case MotionEvent.ACTION_UP:
+                        floatingButton.setPressed(false);
+
+                        if (Math.abs(event.getRawY() - initialTouchY) <= CLICK_ACTION_THRESHOLD) {
+                            floatingButton.performClick();
+                        }
+
+                        return true;
+
+                    case MotionEvent.ACTION_CANCEL:
+                        floatingButton.setPressed(false);
+                        return true;
+                }
+                return false;
+            }
+        });
+        floatingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("MyService", "FloatingActionButton cliccato");
+                Intent intent = new Intent("com.tommasov.mg4swipenovalauncher.ACTION_BACK");
+                sendBroadcast(intent);
+            }
+        });
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (swipeArea != null) windowManager.removeView(swipeArea);
+        if (swipeArea != null) {
+            windowManager.removeView(swipeArea);
+        }
+
+        if (floatingButton != null) {
+            windowManager2.removeView(floatingButton);
+        }
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Intent backIntent = new Intent("ACTION_BACK_PRESS");
+        sendBroadcast(backIntent);
+
         return START_STICKY;
     }
 
@@ -141,15 +230,6 @@ public class SwipeService extends Service {
             if (manager != null) {
                 manager.createNotificationChannel(serviceChannel);
             }
-        }
-    }
-
-    private void checkOverlayPermission() {
-        if (!Settings.canDrawOverlays(this)) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:" + getPackageName()));
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
         }
     }
 }
