@@ -130,8 +130,8 @@ public class SwipeService extends Service {
                 PixelFormat.TRANSLUCENT);
 
         params.gravity = Gravity.BOTTOM | Gravity.LEFT;
-        params.x = 20;
-        params.y = 20;
+        params.x = 25;
+        params.y = 5;
 
         windowManager.addView(floatingButton, params);
 
