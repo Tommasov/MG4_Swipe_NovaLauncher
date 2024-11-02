@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MG 4 Swipe</string>
+    <string name="explanation_text">Scegli una app da lanciare con lo swipe dal basso.</string>
+    <string name="show_system_apps">Mostra le app di sistema</string>
+    <string name="accessibility_service_description">Il pulsante in questa app funziona come un pulsante virtuale \"Indietro\", simulando l\'azione del pulsante fisico \"Indietro\" sul tuo dispositivo. Quando viene premuto, utilizza il Servizio di Accessibilità per inviare un comando che imita l\'azione di tornare indietro, permettendoti di navigare alla schermata precedente o chiudere l\'app corrente. Questo può essere particolarmente utile sui dispositivi senza pulsanti di navigazione dedicati, offrendo un modo rapido e comodo per tornare indietro senza dover raggiungere la barra di navigazione sullo schermo. Per far funzionare questa funzione, dovrai abilitare il Servizio di Accessibilità dell\'app nelle impostazioni del dispositivo.</string>
+</resources>
