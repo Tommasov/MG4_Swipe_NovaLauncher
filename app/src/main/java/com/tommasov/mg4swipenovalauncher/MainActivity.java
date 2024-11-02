@@ -21,11 +21,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import android.widget.Button;
+
 public class MainActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "SwipeServicePrefs";
     private static final String KEY_PACKAGE_NAME = "packageName";
     private PackageManager packageManager;
     private AppListAdapter adapter;
+    private List<ApplicationInfo> allApps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,32 +47,38 @@ public class MainActivity extends AppCompatActivity {
 
         String currentPackageName = getPackageName();
         packageManager = getPackageManager();
-        List<ApplicationInfo> userApps = new ArrayList<>();
+
+        allApps = new ArrayList<>();
         for (ApplicationInfo appInfo : packageManager.getInstalledApplications(PackageManager.GET_META_DATA)) {
             if (!appInfo.packageName.equals(currentPackageName)) {
-                userApps.add(appInfo);
+                allApps.add(appInfo);
             }
         }
 
-        Collections.sort(userApps, new Comparator<ApplicationInfo>() {
-            @Override
-            public int compare(ApplicationInfo app1, ApplicationInfo app2) {
-                String label1 = app1.loadLabel(packageManager).toString();
-                String label2 = app2.loadLabel(packageManager).toString();
-                return label1.compareToIgnoreCase(label2);
-            }
+        Collections.sort(allApps, (app1, app2) -> {
+            String label1 = app1.loadLabel(packageManager).toString();
+            String label2 = app2.loadLabel(packageManager).toString();
+            return label1.compareToIgnoreCase(label2);
         });
 
         ListView listView = findViewById(R.id.app_list);
-        adapter = new AppListAdapter(this, userApps, getSelectedPackage());
+        adapter = new AppListAdapter(this, new ArrayList<>(allApps), getSelectedPackage());
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
-            ApplicationInfo selectedApp = userApps.get(position);
-            saveSelectedPackage(selectedApp.packageName);
-            adapter.setSelectedPackage(selectedApp.packageName);
-            adapter.notifyDataSetChanged();
-            Toast.makeText(MainActivity.this, "Selected: " + selectedApp.packageName, Toast.LENGTH_SHORT).show();
+            ApplicationInfo selectedApp = adapter.getItem(position);
+            if (selectedApp != null) {
+                saveSelectedPackage(selectedApp.packageName);
+                adapter.setSelectedPackage(selectedApp.packageName);
+                adapter.notifyDataSetChanged();
+                Toast.makeText(MainActivity.this, "Selected: " + selectedApp.packageName, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        Button toggleSystemAppsButton = findViewById(R.id.toggle_system_apps_button);
+        toggleSystemAppsButton.setOnClickListener(v -> {
+            adapter.toggleSystemAppsVisibility();
+            toggleSystemAppsButton.setText(adapter.isSystemAppsVisible() ? "Hide System Apps" : "Show System Apps");
         });
 
         startSwipeService();

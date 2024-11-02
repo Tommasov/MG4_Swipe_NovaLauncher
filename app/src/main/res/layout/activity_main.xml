@@ -7,6 +7,12 @@
     android:layout_marginVertical="100dp"
     android:orientation="vertical"
     android:padding="16dp">
+    <Button
+        android:id="@+id/toggle_system_apps_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show System Apps"
+        android:layout_marginBottom="16dp" />
 
     <TextView
         android:id="@+id/explanation_text"
