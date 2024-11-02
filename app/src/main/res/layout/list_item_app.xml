@@ -9,8 +9,8 @@
 
     <ImageView
         android:id="@+id/app_icon"
-        android:layout_width="128dp"
-        android:layout_height="128dp"
+        android:layout_width="92dp"
+        android:layout_height="92dp"
         android:layout_marginEnd="16dp" />
 
     <TextView
@@ -18,7 +18,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textSize="32sp" />
+        android:textSize="26sp" />
 
     <ImageView
         android:id="@+id/app_checkmark"

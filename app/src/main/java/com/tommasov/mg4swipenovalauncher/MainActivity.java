@@ -47,32 +47,41 @@ public class MainActivity extends AppCompatActivity {
 
         String currentPackageName = getPackageName();
         packageManager = getPackageManager();
+        List<ApplicationInfo> userApps = new ArrayList<>();
 
-        allApps = new ArrayList<>();
         for (ApplicationInfo appInfo : packageManager.getInstalledApplications(PackageManager.GET_META_DATA)) {
             if (!appInfo.packageName.equals(currentPackageName)) {
-                allApps.add(appInfo);
+                userApps.add(appInfo);
             }
         }
 
-        Collections.sort(allApps, (app1, app2) -> {
+        Collections.sort(userApps, (app1, app2) -> {
             String label1 = app1.loadLabel(packageManager).toString();
             String label2 = app2.loadLabel(packageManager).toString();
             return label1.compareToIgnoreCase(label2);
         });
 
+        String selectedPackage = getSelectedPackage();
+        if (selectedPackage == null) {
+            for (ApplicationInfo appInfo : userApps) {
+                if (appInfo.packageName.equals("com.teslacoilsw.launcher")) {
+                    selectedPackage = appInfo.packageName;
+                    saveSelectedPackage(selectedPackage);
+                    break;
+                }
+            }
+        }
+
         ListView listView = findViewById(R.id.app_list);
-        adapter = new AppListAdapter(this, new ArrayList<>(allApps), getSelectedPackage());
+        adapter = new AppListAdapter(this, userApps, selectedPackage);
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener((parent, view, position, id) -> {
-            ApplicationInfo selectedApp = adapter.getItem(position);
-            if (selectedApp != null) {
-                saveSelectedPackage(selectedApp.packageName);
-                adapter.setSelectedPackage(selectedApp.packageName);
-                adapter.notifyDataSetChanged();
-                Toast.makeText(MainActivity.this, "Selected: " + selectedApp.packageName, Toast.LENGTH_SHORT).show();
-            }
+            ApplicationInfo selectedApp = userApps.get(position);
+            saveSelectedPackage(selectedApp.packageName);
+            adapter.setSelectedPackage(selectedApp.packageName);
+            adapter.notifyDataSetChanged();
+            Toast.makeText(MainActivity.this, "Selected: " + selectedApp.packageName, Toast.LENGTH_SHORT).show();
         });
 
         Button toggleSystemAppsButton = findViewById(R.id.toggle_system_apps_button);
@@ -83,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
         startSwipeService();
     }
+
 
     private void saveSelectedPackage(String packageName) {
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);

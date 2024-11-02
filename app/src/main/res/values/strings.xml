@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">MG 4 Swipe</string>
     <string name="explanation_text">Select an app to launch with swipe.</string>
+    <string name="show_system_apps">Show System Apps</string>
 </resources>
