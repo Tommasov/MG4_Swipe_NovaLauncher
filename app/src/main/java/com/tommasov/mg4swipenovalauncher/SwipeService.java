@@ -25,7 +25,6 @@ import android.view.GestureDetector.SimpleOnGestureListener;
 public class SwipeService extends Service {
     private static final String CHANNEL_ID = "SwipeServiceChannel";
     private WindowManager windowManager;
-    private WindowManager windowManager2;
     private View swipeArea;
     private View floatingButton;
     private GestureDetector gestureDetector;
@@ -117,7 +116,7 @@ public class SwipeService extends Service {
     }
 
     private void backButton(){
-        windowManager2 = (WindowManager) getSystemService(WINDOW_SERVICE);
+        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         floatingButton = LayoutInflater.from(this).inflate(R.layout.layout_floating_button, null);
 
         int layoutFlags;
@@ -134,7 +133,7 @@ public class SwipeService extends Service {
         params.x = 20;
         params.y = 20;
 
-        windowManager2.addView(floatingButton, params);
+        windowManager.addView(floatingButton, params);
 
         floatingButton.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
@@ -153,8 +152,7 @@ public class SwipeService extends Service {
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
-                        int deltaY = (int) (event.getRawY() - initialTouchY);
-
+                        int deltaY = (int) (initialTouchY - event.getRawY());
                         if (Math.abs(deltaY) > CLICK_ACTION_THRESHOLD) {
                             params.y = initialY + deltaY;
                             windowManager.updateViewLayout(floatingButton, params);
@@ -194,7 +192,7 @@ public class SwipeService extends Service {
         }
 
         if (floatingButton != null) {
-            windowManager2.removeView(floatingButton);
+            windowManager.removeView(floatingButton);
         }
     }
 
