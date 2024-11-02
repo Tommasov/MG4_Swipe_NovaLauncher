@@ -137,7 +137,7 @@ public class SwipeService extends Service {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
-        params.gravity = Gravity.TOP | Gravity.LEFT;
+        params.gravity = Gravity.BOTTOM | Gravity.LEFT;
         params.x = 20;
         params.y = 20;
 
