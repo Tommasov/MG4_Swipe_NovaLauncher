@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">MG 4 Swipe</string>
-    <string name="explanation_text">Select an app to launch with swipe.</string>
+    <string name="explanation_text">Choose an app to launch with a swipe up.</string>
     <string name="show_system_apps">Show System Apps</string>
     <string name="accessibility_service_description">The button in this app functions as a virtual "back" button, simulating the action of a physical back button on your device. When pressed, it uses the Accessibility Service to send a command that mimics the back action, allowing you to navigate to the previous screen or close the current app. This can be especially useful on devices without dedicated navigation buttons, providing a quick and convenient way to move back without needing to reach for the on-screen navigation bar. For this feature to work, you\'ll need to enable the app\'s Accessibility Service in the device settings.</string>
 </resources>
