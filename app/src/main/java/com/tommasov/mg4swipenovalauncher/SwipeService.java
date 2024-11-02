@@ -1,7 +1,5 @@
 package com.tommasov.mg4swipenovalauncher;
 
-import android.accessibilityservice.AccessibilityService;
-import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -11,23 +9,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
-import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.accessibility.AccessibilityManager;
 import android.widget.Toast;
 
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
-
-import java.util.List;
 
 public class SwipeService extends Service {
     private static final String CHANNEL_ID = "SwipeServiceChannel";
