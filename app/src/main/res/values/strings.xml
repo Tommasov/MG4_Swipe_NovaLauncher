@@ -7,5 +7,7 @@
     <string name="per_funzionare_correttamente_l_app_ha_bisogno_del_permesso_di_accessibilit">To function properly, the app needs accessibility permission. \nOnce granted you must reopen the application.</string>
     <string name="concedi_permesso">Grant Permission</string>
     <string name="per_funzionare_correttamente_l_app_ha_bisogno_del_permesso_di_disegnare_sopra_le_altre_app">To function properly, the app needs permission to draw on top of other apps. \nOnce granted you must reopen the application.</string>
-    <string name="nascondi_il_bottone_indietro_utile_per_i_tagliandi">Hide the back button, useful for car servicing</string>
+    <string name="nascondi_il_bottone_indietro_utile_per_i_tagliandi">Hide the floating back button, useful for car servicing (this is hidden by default)</string>
+    <string name="help_swipe_up_here_to_go_back_this_simulate_the_physical_back_button">Help: Swipe up here to go back (this simulate the physical back button)</string>
+    <string name="help_swipe_up_here_to_open_selected_app">Help: Swipe up here to open selected app</string>
 </resources>
