@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_home"
     android:orientation="vertical"
-    android:paddingTop="10dp">
+    android:paddingTop="40dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,7 +18,8 @@
             android:id="@+id/toggle_system_apps_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
             android:text="@string/show_system_apps"
             android:textSize="20sp" />
 
@@ -46,7 +47,7 @@
     <ListView
         android:id="@+id/app_list"
         android:layout_width="match_parent"
-        android:layout_height="530dp"
+        android:layout_height="460dp"
         android:layout_marginHorizontal="200dp"
         android:layout_marginBottom="20dp" />
 
