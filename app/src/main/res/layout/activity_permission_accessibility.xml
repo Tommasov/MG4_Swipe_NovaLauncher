@@ -1,8 +1,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:background="@drawable/bg_home"
     android:gravity="center"
+    android:orientation="vertical"
     android:padding="16dp">
 
     <TextView
@@ -10,14 +11,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/per_funzionare_correttamente_l_app_ha_bisogno_del_permesso_di_accessibilit"
-        android:textSize="30sp"
-        android:textAlignment="center" />
+        android:textAlignment="center"
+        android:textSize="30sp" />
 
     <Button
         android:id="@+id/buttonGrantAccessibilityPermission"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:text="@string/concedi_permesso"
-        android:textSize="20sp"
-        android:layout_marginTop="24dp" />
+        android:textSize="20sp" />
 </LinearLayout>

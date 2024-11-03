@@ -4,7 +4,9 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:background="@drawable/bg_home"
+    android:orientation="vertical"
+    android:paddingTop="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -44,7 +46,7 @@
     <ListView
         android:id="@+id/app_list"
         android:layout_width="match_parent"
-        android:layout_height="540dp"
+        android:layout_height="530dp"
         android:layout_marginHorizontal="200dp"
         android:layout_marginBottom="20dp" />
 
