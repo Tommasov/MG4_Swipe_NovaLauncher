@@ -9,9 +9,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.view.Display;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -19,17 +23,15 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import android.view.GestureDetector;
-import android.view.GestureDetector.SimpleOnGestureListener;
-
-
 public class SwipeService extends Service {
     private PreferencesManager preferencesManager;
     private static final String CHANNEL_ID = "SwipeServiceChannel";
     private WindowManager windowManager;
-    private View swipeArea;
+    private View leftSwipeArea;
+    private View rightSwipeArea;
     private View floatingButton;
-    private GestureDetector gestureDetector;
+    private GestureDetector leftGestureDetector;
+    private GestureDetector rightGestureDetector;
 
     @SuppressLint("ForegroundServiceType")
     @Override
@@ -52,7 +54,26 @@ public class SwipeService extends Service {
         }
     }
 
-    private class SwipeGestureListener extends SimpleOnGestureListener {
+    private class LeftSwipeGestureListener extends SimpleOnGestureListener {
+        private static final int SWIPE_THRESHOLD = 100;
+        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            float startY = e1.getRawY();
+            float endY = e2.getRawY();
+            float diffY = endY - startY;
+
+            if (diffY < 0 && Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+                performBackAction();
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    private class RightSwipeGestureListener extends SimpleOnGestureListener {
         private static final int SWIPE_THRESHOLD = 100;
         private static final int SWIPE_VELOCITY_THRESHOLD = 100;
 
@@ -71,8 +92,12 @@ public class SwipeService extends Service {
         }
     }
 
-    private void openLauncher() {
+    private void performBackAction() {
+        Intent intent = new Intent("com.tommasov.mg4swipenovalauncher.ACTION_BACK");
+        sendBroadcast(intent);
+    }
 
+    private void openLauncher() {
         SharedPreferences sharedPreferences = getSharedPreferences("SwipeServicePrefs", Context.MODE_PRIVATE);
         String packageName = sharedPreferences.getString("packageName", null);
 
@@ -89,35 +114,63 @@ public class SwipeService extends Service {
         }
     }
 
-    private void swipe(){
+    private void swipe() {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        swipeArea = new View(this);
+
+        leftSwipeArea = new View(this);
+        rightSwipeArea = new View(this);
 
         int layoutFlags;
         layoutFlags = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
 
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                10, //100 for the EMULATOR, 10 for MG4
+        WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int screenWidth = size.x;
+
+        int halfScreenWidth = screenWidth / 2;
+
+        WindowManager.LayoutParams leftParams = new WindowManager.LayoutParams(
+                halfScreenWidth,
+                10,
                 layoutFlags,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
-        params.gravity = Gravity.BOTTOM;
+        leftParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
 
-        windowManager.addView(swipeArea, params);
+        WindowManager.LayoutParams rightParams = new WindowManager.LayoutParams(
+                halfScreenWidth,
+                10,
+                layoutFlags,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT);
 
-        gestureDetector = new GestureDetector(this, new SwipeGestureListener());
+        rightParams.gravity = Gravity.BOTTOM | Gravity.RIGHT;
 
-        swipeArea.setOnTouchListener(new View.OnTouchListener() {
+        windowManager.addView(leftSwipeArea, leftParams);
+        windowManager.addView(rightSwipeArea, rightParams);
+
+        leftGestureDetector = new GestureDetector(this, new LeftSwipeGestureListener());
+        rightGestureDetector = new GestureDetector(this, new RightSwipeGestureListener());
+
+        leftSwipeArea.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                return gestureDetector.onTouchEvent(event);
+                return leftGestureDetector.onTouchEvent(event);
+            }
+        });
+
+        rightSwipeArea.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return rightGestureDetector.onTouchEvent(event);
             }
         });
     }
 
-    private void backButton(){
+    private void backButton() {
         preferencesManager = new PreferencesManager(this);
 
         String backButtonVisibility = preferencesManager.getBackButtonVisibility();
@@ -139,7 +192,7 @@ public class SwipeService extends Service {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
-        params.gravity = Gravity.BOTTOM | Gravity.LEFT;
+        params.gravity = Gravity.TOP | Gravity.LEFT;
         params.x = 25;
         params.y = 5;
 
@@ -148,6 +201,7 @@ public class SwipeService extends Service {
         floatingButton.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
+            private float initialTouchX;
             private float initialTouchY;
             private static final int CLICK_ACTION_THRESHOLD = 10;
 
@@ -158,21 +212,23 @@ public class SwipeService extends Service {
                         floatingButton.setPressed(true);
                         initialX = params.x;
                         initialY = params.y;
+                        initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
-                        int deltaY = (int) (initialTouchY - event.getRawY());
-                        if (Math.abs(deltaY) > CLICK_ACTION_THRESHOLD) {
-                            params.y = initialY + deltaY;
-                            windowManager.updateViewLayout(floatingButton, params);
-                        }
+                        int deltaX = (int) (event.getRawX() - initialTouchX);
+                        int deltaY = (int) (event.getRawY() - initialTouchY);
+                        params.x = initialX + deltaX;
+                        params.y = initialY + deltaY;
+                        windowManager.updateViewLayout(floatingButton, params);
                         return true;
 
                     case MotionEvent.ACTION_UP:
                         floatingButton.setPressed(false);
 
-                        if (Math.abs(event.getRawY() - initialTouchY) <= CLICK_ACTION_THRESHOLD) {
+                        if (Math.abs(event.getRawX() - initialTouchX) <= CLICK_ACTION_THRESHOLD &&
+                                Math.abs(event.getRawY() - initialTouchY) <= CLICK_ACTION_THRESHOLD) {
                             floatingButton.performClick();
                         }
 
@@ -188,8 +244,7 @@ public class SwipeService extends Service {
         floatingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent("com.tommasov.mg4swipenovalauncher.ACTION_BACK");
-                sendBroadcast(intent);
+                performBackAction();
             }
         });
     }
@@ -197,8 +252,11 @@ public class SwipeService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (swipeArea != null) {
-            windowManager.removeView(swipeArea);
+        if (leftSwipeArea != null) {
+            windowManager.removeView(leftSwipeArea);
+        }
+        if (rightSwipeArea != null) {
+            windowManager.removeView(rightSwipeArea);
         }
 
         if (floatingButton != null) {
@@ -208,9 +266,6 @@ public class SwipeService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Intent backIntent = new Intent("ACTION_BACK_PRESS");
-        sendBroadcast(backIntent);
-
         return START_STICKY;
     }
 

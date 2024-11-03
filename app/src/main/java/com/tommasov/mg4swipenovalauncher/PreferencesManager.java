@@ -31,6 +31,6 @@ public class PreferencesManager {
     }
 
     public String getBackButtonVisibility() {
-        return sharedPreferences.getString(KEY_BACK_BUTTON_VISIBILITY, "VISIBLE");
+        return sharedPreferences.getString(KEY_BACK_BUTTON_VISIBILITY, "INVISIBLE");
     }
 }
