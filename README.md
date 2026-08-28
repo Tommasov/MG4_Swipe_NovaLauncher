@@ -53,6 +53,23 @@ These options are configurable from the MG4 Swipe main screen:
   (off by default).
 - **App version**: the installed version name is shown in the top corner of the
   main screen.
+  
+## Videoguida in italiano
+
+Una guida video dedicata al pubblico italiano, che mostra il launcher in funzione
+sulla MG4:
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=XDgJUkOuVAg">
+    <img src="https://img.youtube.com/vi/XDgJUkOuVAg/maxresdefault.jpg" alt="MG4 Swipe, e le nuove APP compaiono!!! — videoguida in italiano" width="640" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=XDgJUkOuVAg"><strong>MG4 Swipe, e le nuove APP compaiono!!!</strong></a>
+</p>
+
+> 🇬🇧 *Italian-language video guide showing the launcher running on the MG4 head unit.*
 
 ## Disclaimer (English)
 
